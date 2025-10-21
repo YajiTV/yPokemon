@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="fr">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ypokémon</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+</head>
+
+<body>
+    <div class="container mt-4">
+        <h1 class="d-flex align-items-center">
+            <img src="assets/img.pokeball.png" class="img-fluid" style="width: 50px; height: auto;" alt="Pokéball">
+            Pokémon
+        </h1>
+        <div class="row">
+            <div class="col">
+                <h4>Pokémon 1</h4>
+                <input id="pokemon1" type="text" class="form-control" placeholder="Nom du Pokémon" autocomplete="false">
+                <div class="row">
+                    <div class="col">
+                        <img id="TypePokemon1" src="" class="img-fluid" width="25px">
+                    </div>
+                </div>
+                <img src="" id="imgPokemon1" class="img-fluid">
+                <div class="progress">
+                    <div id="pvPokemon1" class="progress-bar" style="width: 0%"></div>
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item">Attaque : <span id="atk-1"></span> <span id="atk-r-1"></span></li>
+                    <li class="list-group-item">Défense : <span id="def-1"></span></li>
+                    <li class="list-group-item">Spé Attaque : <span id="spe_atk-1"></span></li>
+                    <li class="list-group-item">Spé Défense : <span id="spe_def-1"></span></li>
+                    <li class="list-group-item">Vitesse : <span id="vit-1"></span></li>
+                </ul>
+            </div>
+            <div class="col">
+                <h4>Pokémon 2</h4>
+                <input id="pokemon2" type="text" class="form-control" placeholder="Nom du Pokémon" autocomplete="false">
+                <div class="row">
+                    <div class="col">
+                        <img id="TypePokemon2" src="" class="img-fluid" width="25px">
+                    </div>
+                </div>
+                <img src="" id="imgPokemon2" class="img-fluid">
+                <div class="progress">
+                    <div id="pvPokemon2" class="progress-bar" style="width: 0%"></div>
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item">Attaque : <span id="atk-2"></span> <span id="atk-r-2"></span></li>
+                    <li class="list-group-item">Défense : <span id="def-2"></span></li>
+                    <li class="list-group-item">Spé Attaque : <span id="spe_atk-2"></span></li>
+                    <li class="list-group-item">Spé Défense : <span id="spe_def-2"></span></li>
+                    <li class="list-group-item">Vitesse : <span id="vit-2"></span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row my-5">
+            <div class="col">
+                <button id="button" class="btn btn-warning w-100" onclick="fight()" disabled>Combattre</button>
+                <div id="result" class="mt-3"></div> 
+                <!-- Zone pour afficher les résultats -->
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    const HP_MAX = 250;
+    let pokemon1 = null;
+    let pokemon2 = null;
+    let battleInterval;
+
+    function fight() {
+        if (!pokemon1 || !pokemon2) return;
+
+        battleInterval = setInterval(() => {
+            const damageToPokemon1 = Math.max(0, pokemon2.stats.atk - pokemon1.stats.def);
+            const damageToPokemon2 = Math.max(0, pokemon1.stats.atk - pokemon2.stats.def);
+
+            // Appliquer les dégâts
+            pokemon1.stats.hp -= damageToPokemon1;
+            pokemon2.stats.hp -= damageToPokemon2;
+
+            updateHPDisplay(pokemon1, '1');
+            updateHPDisplay(pokemon2, '2');
+
+            if (checkWinner()) {
+                clearInterval(battleInterval);
+            }
+        }, 1000); // Délai de 1 seconde entre chaque tour de combat
+    }
+
+    function updateHPDisplay(pokemon, index) {
+        const pvElement = document.getElementById(`pvPokemon${index}`);
+        if (pokemon.stats.hp <= 0) {
+            pvElement.style.width = '0%';
+            pvElement.innerHTML = '0 hp';
+            document.getElementById(`imgPokemon${index}`).style.opacity = 0.2;
+        } else {
+            pvElement.style.width = (pokemon.stats.hp / HP_MAX) * 100 + '%';
+            pvElement.innerHTML = pokemon.stats.hp + ' hp';
+        }
+    }
+
+    function checkWinner() {
+        if (pokemon1.stats.hp <= 0 && pokemon2.stats.hp <= 0) {
+            document.getElementById('result').innerHTML = "Match nul !";
+            return true;
+        } else if (pokemon1.stats.hp <= 0) {
+            document.getElementById('result').innerHTML = `${pokemon2.name.fr} gagne !`;
+            pokemon1 = null;
+            return true;
+        } else if (pokemon2.stats.hp <= 0) {
+            document.getElementById('result').innerHTML = `${pokemon1.name.fr} gagne !`;
+            pokemon2 = null;
+            return true;
+        }
+        return false;
+    }
+
+    function checkPokemons() {
+        if (pokemon1 && pokemon2) {
+            document.getElementById('button').removeAttribute('disabled');
+        } else {
+            document.getElementById('button').setAttribute('disabled', true);
+        }
+    }
+
+    document.getElementById('pokemon1').addEventListener('change', async function () {
+        const pokemon = await loadPokemon(this.value);
+
+        if (pokemon.status == 404) {
+            console.log(pokemon.message);
+        } else {
+            pokemon1 = pokemon;
+            initializePokemonDisplay(pokemon, '1');
+            checkPokemons();
+        }
+    });
+
+    document.getElementById('pokemon2').addEventListener('change', async function () {
+        const pokemon = await loadPokemon(this.value);
+
+        if (pokemon.status == 404) {
+            console.log(pokemon.message);
+        } else {
+            pokemon2 = pokemon;
+            initializePokemonDisplay(pokemon, '2');
+            checkPokemons();
+        }
+    });
+
+    function initializePokemonDisplay(pokemon, index) {
+        const hp = pokemon.stats.hp;
+
+        document.getElementById(`imgPokemon${index}`).src = pokemon.sprites.regular;
+        document.getElementById(`pvPokemon${index}`).style.width = (hp / HP_MAX) * 100 + '%';
+        document.getElementById(`pvPokemon${index}`).innerHTML = hp + ' hp';
+        document.getElementById(`TypePokemon${index}`).src = pokemon.types[0].image;
+
+        document.getElementById(`atk-${index}`).innerHTML = pokemon.stats.atk;
+        document.getElementById(`def-${index}`).innerHTML = pokemon.stats.def;
+        document.getElementById(`spe_atk-${index}`).innerHTML = pokemon.stats.spe_atk;
+        document.getElementById(`spe_def-${index}`).innerHTML = pokemon.stats.spe_def;
+        document.getElementById(`vit-${index}`).innerHTML = pokemon.stats.vit;
+    }
+
+    async function loadPokemon(pokemon) {
+        document.getElementById('imgPokemon1').style.opacity = 1; // Pour revenir à une image de base
+        document.getElementById('imgPokemon2').style.opacity = 1;
+
+        const url = `https://tyradex.vercel.app/api/v1/pokemon/${pokemon}`;
+        return await fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                return data;
+            }); 
+    }
+
+</script>
+
+</html>
