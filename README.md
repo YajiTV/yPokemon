@@ -1,5 +1,5 @@
 # Projet réalisé pendant mon jour d'intégration à **Ynov**
-# Ypokémon ⚔️
+# ⚔️ Ypokémon 
 
 Ypokémon est une petite application web qui permet de **faire combattre deux Pokémon** en se basant sur leurs vraies statistiques récupérées depuis une API publique.  
 Elle se joue directement dans le navigateur, sans backend.
